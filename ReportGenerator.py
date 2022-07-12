@@ -1,13 +1,15 @@
 import openpyxl
 import pandas as pd
 
-# TODO define class for generator
+# TODO define class for generator, for now i will use a global array for id's
+global assetOrder
 
-def insertRow(sheet, row):
+def insertRow(sheet, row, j = 1):
     for i, col in enumerate(row):
-        sheet.cell(row=1, column=i+1).value = col.value
+        sheet.cell(row=j, column=i+1).value = col.value
 
 def main():
+    assetOrder = [3177496, 3127710, 3127729]
     csv = 'transactions.csv'
     xlsx = csv.split('.')[0] + '.xlsx'
 
@@ -54,10 +56,16 @@ def main():
 
 
 # separate vouchers into separate sheet
-    """for row in wsTotal.iter_rows(min_row=2, max_row=wsTotal.max_row, min_col=7, max_col=8):
-        if row[0].value != "": #if row[0].value[:12] == "Used voucher":
-            vouchers.append(row)
-        elif row[1].value == "":"""
+    v = 2
+    r = 2
+    for row in wsTotal.iter_rows(min_row=2, max_row=wsTotal.max_row, min_col=1, max_col=19):
+        if row[6].value is not None: #if row[0].value[:12] == "Used voucher":
+            insertRow(vouchers, row, v)
+            v += 1
+        elif row[7].value is None:
+            insertRow(refunds, row, r)
+            r += 1
+            
 
 
 # separate refunds into separate sheet
