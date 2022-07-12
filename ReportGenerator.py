@@ -1,7 +1,6 @@
 import openpyxl
 from pandas import read_csv
 
-# TODO: define class for generator, for now i will use a global array for id's
 class Generator():
     """client sales report generator"""
 
@@ -37,11 +36,23 @@ class Generator():
             sheet.cell(row=j, column=i+1).value = col.value
 
 
+def insertionSort(list, key):
+    """
+    insertion sort algorithm, TODO: refactor to be tailored to the specific needs of the program (sorting asset tuples by different indices)
+    the key is the index of the tuple item to sort the list by
+    """
 
-"""def insertRow(sheet, row, j = 1):
-    #inserts row into sheet, j is the destination row
-    for i, col in enumerate(row):
-        sheet.cell(row=j, column=i+1).value = col.value"""
+    for i in range(1, len(list)):
+
+        key_item = list[i]
+        j = i - 1
+        while j >= 0 and list[j] > key_item:
+            list[j + 1] = list[j]
+            j -= 1
+
+        list[j + 1] = key_item
+
+    return list
 
 
 def main():
@@ -92,7 +103,7 @@ def main():
         
         else:
             # TODO: seperate transactions according to assetID into proper sheet
-            #       first need to get the proper order of assets alphabetically and then based on price high to low
+            #       first need to get the proper order of assets
             print(row[1].value) #show asset id
             print(gen.assets.index(row[1].value)) #show index of asset id
 
