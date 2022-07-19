@@ -4,11 +4,12 @@ from pandas import read_csv
 class Generator():
     """client sales report generator"""
 
-    def __init__(self, csv='transactions.csv'):
+    def __init__(self, csv='transactions.csv'): #by default, opens a csv file called transactions
         self.csv = csv
         self.xlsx = csv.split('.')[0] + '.xlsx'
         self.assets = []
         self.toXL()
+        # get the initial "Total" sheet from the original csv file
         self.Total = self.wb.active
         
     def toXL(self):
@@ -30,23 +31,43 @@ class Generator():
     def setHeading(self, heading):
         self.heading = heading
 
+    def setAssets(self, assets):
+        self.assets = assets
+    
+    def addAsset(self, value):
+        self.assets.append(value)
+
     @staticmethod
     def insertRow(sheet, row, j = 1):
         for i, col in enumerate(row):
             sheet.cell(row=j, column=i+1).value = col.value
 
 
-def insertionSort(list, key):
+def insertionSortA(list, key):
     """
-    insertion sort algorithm, TODO: refactor to be tailored to the specific needs of the program (sorting asset tuples by different indices)
+    insertion sort algorithm, refactored to be tailored to the specific needs of the program (sorting asset tuples by different indices)
     the key is the index of the tuple item to sort the list by
+    """
+    for i in range(1, len(list)):
+        key_item = list[i][key]
+        j = i - 1
+        while j >= 0 and str(list[j][key]) > str(key_item):
+            list[j + 1] = list[j]
+            j -= 1
+        list[j + 1] = key_item
+    return list
+
+def insertionSortD(list, key):
+    """
+    Descending version of insertion sort
     """
 
     for i in range(1, len(list)):
-
-        key_item = list[i]
+        print(list[i], key)
+        key_item = list[i][key]
         j = i - 1
-        while j >= 0 and list[j] > key_item:
+        while j >= 0 and str(list[j][key]) < str(key_item):
+            print("list[j]][key]: ", list[j][key], "key_item: ", key_item)
             list[j + 1] = list[j]
             j -= 1
 
@@ -54,14 +75,10 @@ def insertionSort(list, key):
 
     return list
 
-
 def main():
 
     # create generator instance
     gen = Generator("transactions.csv")
-    
-    # get the initial "Total" sheet from the original csv file
-    
 
     # delete G-J, removing extraneous data that clients dont need to see
     gen.Total.delete_cols(7, 4)
@@ -70,15 +87,30 @@ def main():
 
     # Create separate sheets:
     # for each item in column B, if the assetID is new, create a new sheet
+    tempAssets = []
     for cell in gen.Total['B']:
         if cell.value != "Asset ID":
-            if cell.value not in gen.assets:
-                gen.assets.append(cell.value) # TODO: instead, append a tuple with (ID, name, price) to be sorted alphabetically and then based on price high to low
-                gen.wb.create_sheet(title=f"p{gen.assets.index(cell.value)+1}")
-                tempSheet = gen.wb[f"p{gen.assets.index(cell.value)+1}"]
+            if cell.value not in tempAssets:
+                tempAssets.append(cell.value)
+                gen.wb.create_sheet( title=f"p{tempAssets.index(cell.value)+1}" )
+                tempSheet = gen.wb[ f"p{tempAssets.index(cell.value)+1}" ]
                 gen.insertRow(tempSheet, gen.heading)
-                
+
+        # --> Find Assets
+    # list assets with (ID, name, price)
+    for row in gen.Total.iter_rows(min_row=2, max_row=gen.Total.max_row, min_col=1, max_col=9):
+        if ( row[1].value, row[8].value, row[4].value ) not in gen.assets and row[4].value != 0:
+            gen.addAsset( (row[1].value, row[8].value, row[4].value) ) # append a tuple with (ID, name, price) to be sorted alphabetically and then based on price high to low
+    print(len(gen.assets))
+    # sort the list of assets alphabetically by name
+    gen.setAssets( insertionSortA(gen.assets, 1) )
+
+    # sort the list of assets by price high to low
+    #gen.setAssets( insertionSortD(gen.assets, 2) )
+
+    print("Assets <<<", gen.assets, ">>>")
     
+    # TODO: remove vouchers and refunds from total tab before finding assets
     # add tab for vouchers and refunds
     vouchers = gen.wb.create_sheet(title="vouchers")
     gen.insertRow(vouchers, gen.heading)
@@ -86,6 +118,7 @@ def main():
     gen.insertRow(refunds, gen.heading)
 
     
+    ### --> Loop through each row
     v = 2
     r = 2
     for row in gen.Total.iter_rows(min_row=2, max_row=gen.Total.max_row, min_col=1, max_col=19):
@@ -102,12 +135,12 @@ def main():
             r += 1
         
         else:
-            # TODO: seperate transactions according to assetID into proper sheet
-            #       first need to get the proper order of assets
+            #  TODO: seperate transactions according to assetID into proper sheet
             print(row[1].value) #show asset id
-            print(gen.assets.index(row[1].value)) #show index of asset id
+            #print(gen.assets.index(row[1].value)) #show index of asset id
 
     gen.wb.save(gen.xlsx)
+
 
 if __name__ == "__main__":
     main()
