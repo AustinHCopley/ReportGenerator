@@ -51,7 +51,7 @@ def insertionSortA(list, key):
     for i in range(1, len(list)):
         key_item = list[i][key]
         j = i - 1
-        while j >= 0 and str(list[j][key]) > str(key_item):
+        while j >= 0 and str(list[j][key]) < str(key_item):
             list[j + 1] = list[j]
             j -= 1
         list[j + 1] = key_item
@@ -99,10 +99,13 @@ def main():
         # --> Find Assets
     # list assets with (ID, name, price)
     for row in gen.Total.iter_rows(min_row=2, max_row=gen.Total.max_row, min_col=1, max_col=9):
-        if ( row[1].value, row[8].value, row[4].value ) not in gen.assets and row[4].value != 0:
+        if ( row[1].value, row[8].value, row[4].value ) not in gen.assets and row[4].value != 0: # if (id, name, price) tuple is not in assets
+            print("no", row[1].value, row[8].value, row[4].value)
             gen.addAsset( (row[1].value, row[8].value, row[4].value) ) # append a tuple with (ID, name, price) to be sorted alphabetically and then based on price high to low
-    print(len(gen.assets))
+
+    print("Assets <<<", gen.assets, ">>>")
     # sort the list of assets alphabetically by name
+    print("A" > "B")
     gen.setAssets( insertionSortA(gen.assets, 1) )
 
     # sort the list of assets by price high to low
@@ -110,14 +113,13 @@ def main():
 
     print("Assets <<<", gen.assets, ">>>")
     
-    # TODO: remove vouchers and refunds from total tab before finding assets
     # add tab for vouchers and refunds
     vouchers = gen.wb.create_sheet(title="vouchers")
     gen.insertRow(vouchers, gen.heading)
     refunds = gen.wb.create_sheet(title="refunds")
     gen.insertRow(refunds, gen.heading)
-
     
+    # TODO: remove vouchers and refunds from total tab before finding assets
     ### --> Loop through each row
     v = 2
     r = 2
