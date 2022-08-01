@@ -51,7 +51,7 @@ def insertionSortA(list, key):
     for i in range(1, len(list)):
         key_item = list[i][key]
         j = i - 1
-        while j >= 0 and str(list[j][key]) < str(key_item):
+        while j >= 0 and str(list[j][key]) > str(key_item):
             list[j + 1] = list[j]
             j -= 1
         list[j + 1] = key_item
@@ -105,7 +105,6 @@ def main():
 
     print("Assets <<<", gen.assets, ">>>")
     # sort the list of assets alphabetically by name
-    print("A" > "B")
     gen.setAssets( insertionSortA(gen.assets, 1) )
 
     # sort the list of assets by price high to low
